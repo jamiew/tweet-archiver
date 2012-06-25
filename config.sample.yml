@@ -1,0 +1,10 @@
+twitter:
+  username: mytwitterbot
+  password: lolcatz90210
+  oauth_key: xxxxxxxxxxx
+  oauth_secret: xxxxxxxxxxxxxxxxxxxx
+
+query: "track=memes"
+repost_tweets: true
+include_retweets: false
+
