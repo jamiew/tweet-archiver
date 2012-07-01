@@ -52,7 +52,7 @@ def handle_tweet(status)
 
   if true # it's new
     # Save it to disk
-    puts "Saving tweet to disk..."
+    puts "Saving tweet to disk..."; STDOUT.flush
     json_file = "tweets/#{tweet.user.screen_name}-#{tweet.id_str}.json"
     File.open(json_file, 'w') {|f| f.write(status.to_json) }
 
@@ -60,24 +60,31 @@ def handle_tweet(status)
     # ...
 
     # Take a screenshot -- just the fullscreen one pls
-    # TODO fork into background
-    puts "Capturing screenshot..."
+    puts "Capturing screenshot..."; STDOUT.flush
     output = "screenshots/#{tweet.user.screen_name}-#{tweet.id_str}"
-    `webkit2png #{tweet_url} -F -o #{output}`
     screenshot_file = "#{output}-full.png" # what webkit2png actually makes (using -F)
+    screenshotter = EventMachine::DeferrableChildProcess.open("webkit2png #{tweet_url} -F -o #{output}")
 
-    # Upload said image to imgur
-    if $config['imgur']
-      puts "Uploading to imgur..."
-      imgur = Imgur2.new($config['imgur']['api_key'])
-      upload = imgur.upload(File.open(screenshot_file))
-      pp upload
-    end
+    screenshotter.callback {|data|
+      puts "Screenshot captured. #{data.inspect}"
+      # Upload said image to imgur
+      if $config['imgur']
+        puts "Uploading to imgur..."; STDOUT.flush
+        imgur = Imgur2.new($config['imgur']['api_key'])
+        upload = imgur.upload( File.open(screenshot_file) )
+        pp upload; STDOUT.flush
+      else
+        puts "No imgur credentials, not uploading"; STDOUT.flush
+      end
 
-    # Upload that shit to S3 ...
-    # TODO
+      # Upload that shit to S3 ...
+      # TODO
+      puts "Screenshot post-processing done."; STDOUT.flush
+    }
+    screenshotter.errback {|data|
+      STDERR.puts "Error taking screenshot!"; STDERR.flush
+    }
 
-    puts "Done"
   end
 
   tweet
