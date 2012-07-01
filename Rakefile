@@ -3,7 +3,6 @@ require 'rubygems'
 require 'pp'
 require 'fileutils'
 require 'yaml'
-require 'to_openstruct'
 
 require 'bundler'
 Bundler.setup
@@ -14,6 +13,27 @@ require 'phantomjs.rb'
 require 'screencap'
 require 'imgur2'
 
+# Previously to_openstruct.rb
+# Heroku giving me file grief...
+class Hash
+  def to_openstruct
+    mapped = {}
+    each{ |key,value| mapped[key] = value && value.to_openstruct || value }
+    OpenStruct.new(mapped)
+   end
+end
+
+class Array
+  def to_openstruct
+    map{ |el| el.to_openstruct }
+  end
+end
+
+class Object
+  def to_openstruct
+    self
+  end
+end
 
 # Configure
 $config = YAML.load(File.open('config.yml').read)
