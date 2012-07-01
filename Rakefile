@@ -59,7 +59,7 @@ def handle_tweet(status)
   if tweet.nil?
     STDERR.puts "Bad tweet man"; STDERR.flush
     return
-  elsif tweet.text.empty?
+  elsif tweet.text.nil? || tweet.text.empty?
     STDERR.puts "Blank tweet text, skipping"; STDERR.flush
     return
   end
