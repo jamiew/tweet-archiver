@@ -1,17 +1,16 @@
 require 'rubygems'
-require 'bundler'
-Bundler.setup
-
-require 'json'
-require 'twitter'
-require 'twitter/json_stream'
-require 'imgur2'
 
 require 'pp'
 require 'fileutils'
 require 'yaml'
-
 require 'to_openstruct'
+
+require 'bundler'
+Bundler.setup
+require 'json'
+require 'twitter'
+require 'twitter/json_stream'
+require 'imgur2'
 
 
 # Configure
