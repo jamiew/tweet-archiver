@@ -1,7 +1,18 @@
 require 'rubygems'
-require 'rake'
+require 'bundler'
+Bundler.setup
+
+require 'system_timer'
+require 'json'
+require 'twitter'
+require 'twitter/json_stream'
+require 'imgur2'
+
 require 'pp'
+require 'fileutils'
 require 'yaml'
+
+require 'to_openstruct'
 
 
 # Configure
@@ -11,7 +22,7 @@ pp $config
 Twitter.configure do |config|
   tc = $config['twitter']
   ['consumer_key', 'consumer_secret', 'oauth_token', 'oauth_token_secret'].each do |field|
-    raise "Error, config['twitter']['#{field}'] key missing. Please edit config.yml" if tc[field].nil? || tc[field.empty?
+    raise "Error, config['twitter']['#{field}'] key missing. Please edit config.yml" if tc[field].nil? || tc[field].empty?
   end
 
   config.consumer_key = tc['consumer_key']
@@ -24,18 +35,49 @@ end
 # Helpers
 def handle_tweet(status)
   tweet = status.to_openstruct
-  if tweet.text.blank?
-    STDERR.puts "Blank tweet text, skipping"
-    STDERR.flush
+  if tweet.nil?
+    STDERR.puts "Bad tweet man"; STDERR.flush
+    return
+  elsif tweet.text.empty?
+    STDERR.puts "Blank tweet text, skipping"; STDERR.flush
     return
   end
 
-  STDOUT.puts "Tweetscan: received \"#{tweet.user.screen_name}: #{tweet.text}\"..."
+  # Build the url to the tweet
+  # why isn't this in the status obj? Weird
+  user_url = "http://twitter.com/#{tweet.user.screen_name}"
+  tweet_url = "#{user_url}/status/#{tweet.id_str}"
+  STDOUT.puts "Tweetscan: received \"#{tweet.user.screen_name}: #{tweet.text}\" => #{tweet_url}"
   STDOUT.flush
 
   if true # it's new
-    puts "sending twitter msg..."
-    # Post it back to Twitter
+    # Save it to disk
+    puts "Saving tweet to disk..."
+    json_file = "tweets/#{tweet.user.screen_name}-#{tweet.id_str}.json"
+    File.open(json_file, 'w') {|f| f.write(status.to_json) }
+
+    # Post it back to Twitter (?)
+    # ...
+
+    # Take a screenshot -- just the fullscreen one pls
+    # TODO fork into background
+    puts "Capturing screenshot..."
+    output = "screenshots/#{tweet.user.screen_name}-#{tweet.id_str}"
+    `webkit2png #{tweet_url} -F -o #{output}`
+    screenshot_file = "#{output}-full.png" # what webkit2png actually makes (using -F)
+
+    # Upload said image to imgur
+    if $config['imgur']
+      puts "Uploading to imgur..."
+      imgur = Imgur2.new($config['imgur']['api_key'])
+      upload = imgur.upload(File.open(screenshot_file))
+      pp upload
+    end
+
+    # Upload that shit to S3 ...
+    # TODO
+
+    puts "Done"
   end
 
   tweet
@@ -45,8 +87,11 @@ end
 # void main()
 task :tweetscan do
 
-  require 'twitter/json_stream'
   $stdout.puts "Tweetscan launching..."; $stdout.flush
+
+  # Make our directory for screenshots and saving tweets
+  FileUtils.mkdir_p 'tweets'
+  FileUtils.mkdir_p 'screenshots'
 
   # Run our query
   raise "No query key specified in config" if $config['query'].nil? || $config['query'].empty?
