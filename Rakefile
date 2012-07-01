@@ -2,7 +2,6 @@ require 'rubygems'
 require 'bundler'
 Bundler.setup
 
-require 'system_timer'
 require 'json'
 require 'twitter'
 require 'twitter/json_stream'
