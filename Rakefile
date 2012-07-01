@@ -99,7 +99,7 @@ def handle_tweet(status)
         puts "Uploading to imgur..."; STDOUT.flush
         imgur = Imgur2.new($config['imgur']['api_key'])
         upload = imgur.upload( File.open(screenshot_file) )
-        pp upload; STDOUT.flush
+        # pp upload; STDOUT.flush
 
         # Tweet that we posted to imgur (!)
         imgur_page = upload['upload']['links']['imgur_page']
