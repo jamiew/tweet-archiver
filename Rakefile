@@ -3,9 +3,25 @@ require 'rake'
 require 'pp'
 require 'yaml'
 
+
+# Configure
 $config = YAML.load(File.open('config.yml').read)
 pp $config
 
+Twitter.configure do |config|
+  tc = $config['twitter']
+  ['consumer_key', 'consumer_secret', 'oauth_token', 'oauth_token_secret'].each do |field|
+    raise "Error, config['twitter']['#{field}'] key missing. Please edit config.yml" if tc[field].nil? || tc[field.empty?
+  end
+
+  config.consumer_key = tc['consumer_key']
+  config.consumer_secret = tc['consumer_secret']
+  config.oauth_token = tc['oauth_token']
+  config.oauth_token_secret = tc['oauth_token_secret']
+end
+
+
+# Helpers
 def handle_tweet(status)
   tweet = status.to_openstruct
   if tweet.text.blank?
@@ -26,11 +42,13 @@ def handle_tweet(status)
 end
 
 
+# void main()
 task :tweetscan do
 
   require 'twitter/json_stream'
   $stdout.puts "Tweetscan launching..."; $stdout.flush
 
+  # Run our query
   raise "No query key specified in config" if $config['query'].nil? || $config['query'].empty?
 
   search_query = $config['query']
