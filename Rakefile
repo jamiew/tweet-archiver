@@ -38,7 +38,6 @@ end
 # Configure
 $config = YAML.load(File.open('config.yml').read)
 $config ||= JSON.parse(ENV['TWEET_ARCHIVE_CONFIG']) # pushing all local settings to prod in one big blob; TODO add rake task for that
-pp $config
 
 Twitter.configure do |config|
   tc = $config['twitter']
@@ -61,6 +60,7 @@ def handle_tweet(status)
     return
   elsif tweet.text.nil? || tweet.text.empty?
     STDERR.puts "Blank tweet text, skipping"; STDERR.flush
+    pp tweet; STDOUT.flush
     return
   end
 
