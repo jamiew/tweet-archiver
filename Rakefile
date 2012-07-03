@@ -71,54 +71,42 @@ def handle_tweet(status)
   STDOUT.puts "Tweetscan: received \"#{tweet.user.screen_name}: #{tweet.text}\" => #{tweet_url}"
   STDOUT.flush
 
-  if true # it's new
-    # Save it to disk
-    puts "Saving tweet to disk..."; STDOUT.flush
-    json_file = "tweets/#{tweet.user.screen_name}-#{tweet.id_str}.json"
-    File.open(json_file, 'w') {|f| f.write(status.to_json) }
+  # Save it to disk
+  puts "Saving tweet to disk..."; STDOUT.flush
+  json_file = "tweets/#{tweet.user.screen_name}-#{tweet.id_str}.json"
+  File.open(json_file, 'w') {|f| f.write(status.to_json) }
 
-    # Post it back to Twitter (?)
-    # ...
+  # Post it back to Twitter (?)
+  # ...
 
-    # Take a screenshot -- just the fullscreen one pls
-    puts "Capturing screenshot..."; STDOUT.flush
-    output = "screenshots/#{tweet.user.screen_name}-#{tweet.id_str}"
-    screenshot_file = "#{output}-full.png" # what webkit2png actually makes (using -F)
+  # Save it to S3 or Dropbox maybe
+  # ...
 
-    f = Screencap::Fetcher.new(tweet_url)
-    # screenshot = f.fetch(:div => '.header', :output => '~/screenshot_file.png') #dont forget the extension!
-    screenshot = f.fetch(:output => screenshot_file) #dont forget the extension!
+  # Take a screenshot
+  puts "Capturing screenshot..."; STDOUT.flush
+  output = "screenshots/#{tweet.user.screen_name}-#{tweet.id_str}"
+  screenshot_file = "#{output}-full.png"
 
-    # screenshotter = EventMachine::DeferrableChildProcess.open("webkit2png #{tweet_url} -F -o #{output}")
-    #
-    # screenshotter.callback {|data|
-      data ||= nil
-      puts "Screenshot captured. #{data.inspect}"
-      # Upload said image to imgur
-      if $config['imgur']
-        puts "Uploading to imgur..."; STDOUT.flush
-        imgur = Imgur2.new($config['imgur']['api_key'])
-        upload = imgur.upload( File.open(screenshot_file) )
-        # pp upload; STDOUT.flush
+  f = Screencap::Fetcher.new(tweet_url)
+  screenshot = f.fetch(:output => screenshot_file) # dont forget the extension!
 
-        # Tweet that we posted to imgur (!)
-        imgur_page = upload['upload']['links']['imgur_page']
-        if imgur_page
-          puts "Posting imgur page to Twitter => #{imgur_page}"
-          twitter = Twitter.update(upload['upload']['links']['imgur_page'])
-        end
-      else
-        puts "No imgur credentials, not uploading"; STDOUT.flush
-      end
+  # Upload said image to imgur
+  data ||= nil
+  puts "Screenshot captured. #{data.inspect}"
+  if $config['imgur']
+    puts "Uploading to imgur..."; STDOUT.flush
+    imgur = Imgur2.new($config['imgur']['api_key'])
+    upload = imgur.upload( File.open(screenshot_file) )
+    # pp upload; STDOUT.flush
 
-      # Upload that shit to S3 ...
-      # TODO
-      puts "Screenshot post-processing done."; STDOUT.flush
-    # }
-    # screenshotter.errback {|data|
-    #   STDERR.puts "Error taking screenshot!"; STDERR.flush
-    # }
-
+    # Tweet that we posted to imgur (!)
+    imgur_page = upload['upload']['links']['imgur_page']
+    if imgur_page
+      puts "Posting imgur page to Twitter => #{imgur_page}"
+      twitter = Twitter.update(upload['upload']['links']['imgur_page'])
+    end
+  else
+    puts "No imgur credentials, not uploading"; STDOUT.flush
   end
 
   tweet
