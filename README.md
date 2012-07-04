@@ -1,12 +1,11 @@
-tweet-archiver (jdubs edition)
-=============================
+tweet-archiver
+==============
 
 Saves tweets from Twitter's streaming API. Can be run on Heroku for free (Cedar stack; only needs 1 dyno)
 
 There's a bunch of these out there, but this one does all the things I want.
 
 * Saves tweets as text files
-* Saves tweets as database records
 * Takes screenshots
 * Uploads said screenshots to imgur
 * Posts to Twitter
@@ -50,10 +49,12 @@ Note that running two instances of this with the same credentials seems verboten
 TODO
 ----
 
-* needs a better name
+* Needs a better name
+* Save tweets as database records (WIP in the `database` branch)
 * S3 or Dropbox file-saving support (like IFTTT)
-* post to IRC/HipChat/Campfire/XMPP
-* could be fun to hack GitHub or Pastebin et al to use as tweet storage engines
+* Publish to a static HTML file or e.g. GitHub pages
+* Post to IRC/HipChat/Campfire/XMPP
+* Could be fun to hack support for storing to git, Pastebin and other non-standard storage engines
 
 Contributing
 ------------
