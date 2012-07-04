@@ -38,6 +38,7 @@ heroku create mytweets --stack=cedar
 heroku config:add TWEET_ARCHIVE_CONFIG=$(ruby -e "require 'yaml'; require 'json'; puts YAML.load(File.open('config.yml').read).to_json")
 git push heroku master
 heroku scale stream=1
+```
 
 TODO
 ----
